@@ -1,0 +1,5 @@
+<div class="alert alert-secondary" align="center" role="alert"><b>${pdict.message}</b></div>
+<isinclude url="${URLUtils.url('Tile-Show', 'pid', pdict.product.ID, 'swatches', true, 'ratings', true, 'showQuickView', true)}" />
+<isif condition="${pdict.debugMessage != null && pdict.debugMessage != ''}">
+    <div class="alert alert-danger" align="center" role="alert">${pdict.debugMessage} </div>
+</isif>
