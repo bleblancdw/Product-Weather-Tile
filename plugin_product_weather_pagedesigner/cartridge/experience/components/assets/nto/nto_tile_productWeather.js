@@ -1,6 +1,7 @@
 'use strict';
 
 const HttpClient = require('dw/net/HTTPClient');
+
 var Template = require('dw/util/Template');
 var HashMap = require('dw/util/HashMap');
 
@@ -15,19 +16,28 @@ module.exports.render = function(context) {
   var model = new HashMap();
   var content = context.content;
 
-  var results = getWeather(request);
-  var location = "";
-  var location = getLocationInfo(request, "AIzaSyBTRieRpUiL-yNORQc8fOnxpw2Sox4jPD0");
+  /*
+  Get the geolocation data from the request object
+  */
+  var lat = request.geolocation.latitude;
+  var long = request.geolocation.longitude;
+  var city = request.geolocation.city;
+  var state = request.geolocation.regionName;
 
-  var city = location.results[0].address_components[2].short_name;
-  var state = location.results[0].address_components[4].short_name;
+/*
+Call getWeather to retrieve the weather using the geolocation data
+*/
+  var results = getWeather(request, lat, long);
+  var location = "";
 
   var product = null;
   var message = null;
   var debugMessage = "";
 
+  /*
+  parse the temperature from the web service response
+  */
   var currentTemp = results.properties.periods[0].temperature;
-
 
   if(content.isDebug){
     debugMessage = "DEBUG: It's " + currentTemp + " in " + city + ", " + state + " :  " + request.geolocation.latitude + ", " + request.geolocation.longitude;
@@ -67,8 +77,7 @@ module.exports.render = function(context) {
   model.message = message;
   model.debugMessage = debugMessage;
   model.loc = location;
-  // model.apsDATA=results;
-
+  
   return new Template('experience/components/assets/nto/nto_tile_productWeather').render(model).text;
 };
 
@@ -79,13 +88,14 @@ module.exports.render = function(context) {
  * needed to get this info.
  * @param req
  * @param controlTemp
+ * @param lat
+ * @param long
  * @returns {string|any}
  */
-function getWeather(req, controlTemp) {
+function getWeather(req, lat, long) {
 
   var http = new HttpClient();
-  var lat = req.geolocation.latitude;
-  var long = req.geolocation.longitude;
+
   http.open('GET', 'https://api.weather.gov/points/'+lat+','+long+'/forecast');
   http.setTimeout(7000);
   http.send();
